@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BER Passenger Survey</title>
+	<link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <link
+      rel="stylesheet"
+      href="https://survalyzereu.blob.core.windows.net/public/assets/font-awesome.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://survalyzereu.blob.core.windows.net/public/assets/dx.common.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://survalyzereu.blob.core.windows.net/public/assets/dx.light.css"
+    />
+    <link
+      href="https://survalyzer.survalyzer.eu/assets/themes/default/rt-theme.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <link href="css/map-search-box.css" rel ="stylesheet" type="text/css" />
+    <link href="css/postal-code-search-box.css" rel ="stylesheet" type="text/css" />
+  </head>
+
+  <body>
+    <survalyzer-survey
+      surveyhash="jrirbfeuyo"
+      tenant="silverlining"
+    ></survalyzer-survey>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://survalyzer.survalyzer.eu/assets/survalyzer-survey.js"></script>
+
+    <script src="search_list/postal_code_Czech.js"></script>
+    <script src="search_list/postal_Code_Germany.js"></script>
+    <script src="search_list/postal_code_Poland.js"></script>
+    <script src="search_list/postal_code_None.js"></script>
+
+    <script src="scripts/postal_code_search.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        window.addEventListener('load', function () {
+        setTimeout(() => {
+          const googleMapsHandler = () => {
+            console.log("Current Page Index: ", api.fn.getCurrentPageIndex() );
+            var foundin = $( "section:contains('#PostcalCodeQuestionGermany')" )
+            console.log(foundin);
+            // check found in exist via foundin.length  with > 1 is OK. 0 means not found the text.
+            // make sure check the answer value (hide / show) because we can click Back and Next.
+            //if ((foundin.length === 1 && api.fn.answers().answer != 'show')) { //postal code
+	          if ((foundin.length === 1)) { //postal code
+              showPostalCodeSection_q6();
+            } else {
+              hidePostalCodeSection_q6();
+            }
+
+          };
+
+          api.events.subscribe('next', googleMapsHandler);
+          api.events.subscribe('back', googleMapsHandler);
+          api.events.subscribe('startedOrContinued', googleMapsHandler);
+        });
+      });
+    </script>
+
+<!--     <input list="postalCodeList" style="display: none" onchange="select_postal_code()"  onkeyup="search_postal_code()" name="inputPostalCodeID" id="inputPostalCodeID" >
+    <datalist id="postalCodeList"> </datalist>  -->
+  
+</body>
+</html>

@@ -21,7 +21,7 @@ function find_postal_code(list, item) {
 function load_postal_code() {
   console.log("load_postal_code started...");
 
-  var country = api.fn.answers().q1_1_text;
+  var country = api.fn.answers().Q_Nationality_1_text;
 
   if (country ==="Republica Checa" || country ==="Tchéquie" || country ==="Republika Czeska" 
       || country ==="Çek Cumhuriyeti" || country ==="Tschechien" || country ==="Czech Republic")  {
