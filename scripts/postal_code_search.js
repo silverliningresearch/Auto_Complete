@@ -1,4 +1,6 @@
-var postalCode;
+var postalCodeList;
+var rawList = [];
+var postalCodeShortList = [];
 
 function find_postal_code(list, item) {
   item = item.toLowerCase();
@@ -6,8 +8,7 @@ function find_postal_code(list, item) {
   if (item) {
     if (item !== "") {
       for (i = 0; i < list.length; i++) {
-        console.log("list[i]:", list[i]);
-        if (list[i].Name.toLowerCase() === item) {
+        if (list[i].show.toLowerCase() === item) {
           $('.rt-btn.rt-btn-next').show(); 
           return true;
         }
@@ -21,230 +22,143 @@ function find_postal_code(list, item) {
 function load_postal_code() {
   console.log("load_postal_code started...");
 
-  var country = api.fn.answers().Q_Nationality_1_text;
-
-  if (country ==="Republica Checa" || country ==="Tchéquie" || country ==="Republika Czeska" 
-      || country ==="Çek Cumhuriyeti" || country ==="Tschechien" || country ==="Czech Republic")  {
-    postalCode = JSON.parse(postalCodeCzech);
-  } else if (country ==="Germany" || country ==="Deutschland" || country ==="Almanya" 
-             || country ==="Niemcy" || country ==="Allemagne" || country ==="Alemania") {
-    postalCode = JSON.parse(postalCodeGermany);
+  var country = api.fn.answers().Q55_Recoded;
+  if (country.includes('Belgium')) {
+    rawList = JSON.parse(postalCodeBelgium);
   }
-  else if (country ==="Poland" || country ==="Polonya" || country ==="Polska" 
-          || country ==="Pologne" || country ==="Polonia" || country ==="Polen")  {
-    postalCode = JSON.parse(postalCodePoland);
+  else if (country.includes('France')) {
+    rawList = JSON.parse(postalCodeFrance);
+  }
+  else if (country.includes('Germany')) {
+    rawList = JSON.parse(postalCodeGermany);
+  }
+  else if (country.includes('Luxembourg')) {
+    rawList = JSON.parse(postalCodeLuxembourg);
+  }
+  else if (country.includes('Netherlands'))  {
+    rawList = JSON.parse(postalCodeNetherlands);
   }
   else {
-    postalCode = JSON.parse(postalCodeNone);
+    rawList = JSON.parse(postal_code_All);
+  }
+  
+  postalCodeList = [];
+  postalCodeList.length = 0;
+  for (i = 0; i < rawList.length; i++) {
+    var item = rawList[i];
+    postalCodeList.push(item);
   }
 
-  console.log("country: ", country);
+  //Add Dont want to answer
+  // var item;
+  // item.Code = "Don’t want to answer";
+  // item.Catchment = "Don’t want to answer";
+  // item.AVM = "Don’t want to answer";
+  // item.Country = "Don’t want to answer";
+  // item.show = "Don’t want to answer";  
+  // postalCodeList.push(item);
+  ////////////////
+
+  api.fn.answers({Q56_Catchment:  "No"}); //Clear it
   console.log("load_postal_code done!");
 }
 
-function search_postal_code() {
-  var input = document.getElementById('inputpostalCodeID').value;
-  var list = document.getElementById('postalCodeList');
+function update_postal_code_search_box() {
+  var input = document.getElementById('inputPostalCodeID').value;
+  var list = document.getElementById('postalCodehtmlList');
   
   list.innerHTML = '';
   input = input.toLowerCase();
 
-  console.log("search_postal_code started...");
+  postalCodeShortList = [];
+  postalCodeShortList.length = 0;
+
   var count = 0;
-  for (i = 0; i < postalCode.length; i++) {
-    let postcalCode = postalCode[i];
+  if (input.length>0) {
+    for (i = 0; i < postalCodeList.length; i++) {
+      let postcalCode = postalCodeList[i];
 
-    if (postcalCode.Name.toLowerCase().includes(input)) {
-      const elem = document.createElement("option");
-      elem.value = postcalCode.Name;
-      list.appendChild(elem);
-      count++;
+      if (postcalCode.show.toLowerCase().includes(input)) {
+        const elem = document.createElement("option");
+        elem.value = postcalCode.show;
+        list.appendChild(elem);
+        postalCodeShortList.push(postcalCode);
+        count++;
+      }
+
+      if ((count > 7)) {
+        break;
+      }
     }
-    if (count > 30) break;
   }
-
-  console.log("search_postal_code done!");
   
-  if (find_postal_code(postalCode, document.getElementById('inputpostalCodeID').value)) {
-    console.log("Found ", document.getElementById('inputpostalCodeID').value);
+  //Load "Dont want to answer" from the end of the list
+  // let postcalCode = postalCodeList[postalCodeList.length-1];
+  // const elem = document.createElement("option");
+  // elem.value =  postcalCode.show;
+  // list.appendChild(elem);
+  // postalCodeShortList.push(postcalCode);
+  ////////////////
+
+  if (find_postal_code(postalCodeList, document.getElementById('inputPostalCodeID').value)) {
+    console.log("Found ", document.getElementById('inputPostalCodeID').value);
   }
   else{
-    console.log("not found ", document.getElementById('inputpostalCodeID').value);
+    console.log("not found ", document.getElementById('inputPostalCodeID').value);
   }
 }
 
 function select_postal_code() {
-  var postalCode = document.getElementById('inputpostalCodeID').value;
-  api.fn.answers({urlVar19:  postalCode});
-    
-  console.log("selected value:", postalCode);
-      
-  if (find_postal_code(postalCode, document.getElementById('inputpostalCodeID').value)) {
-    console.log("Found ", document.getElementById('inputpostalCodeID').value);
+  var selectedPostalCode = document.getElementById('inputPostalCodeID').value;
+  api.fn.answers({Core_Q56:  selectedPostalCode});
+  api.fn.answers({Q56_postal_code_show:  selectedPostalCode});
+  
+  for (i = 0; i < postalCodeShortList.length; i++) {
+    var currentPostalCode = postalCodeShortList[i];
+    if (currentPostalCode.show == selectedPostalCode) { 
+      console.log("selectedPostalCode: ", currentPostalCode);
+      api.fn.answers({Core_Q56:  currentPostalCode.Code});
+      api.fn.answers({Q56_Catchment:  currentPostalCode.Catchment});
+      api.fn.answers({Q56_Key:  currentPostalCode.Key});
+      api.fn.answers({Q56_AVM:  currentPostalCode.AVM});
+    }
+  }
+
+  if (find_postal_code(postalCodeList, document.getElementById('inputPostalCodeID').value)) {
+    console.log("Select found ", document.getElementById('inputPostalCodeID').value);
   }
   else{
-    console.log("not found ", document.getElementById('inputpostalCodeID').value);
+    console.log("Select not found ", document.getElementById('inputPostalCodeID').value);
     alert("Please select a postal code from the list.");
   }
-
-  console.log("select_postal_code done!");
 }
 
-// Important: Make sure to return true when your filter
-// receives an empty string as a search term.
-
-function contains(str1, str2) {
-  return new RegExp(str2, "i").test(str1);
-}
-
-function showPostalCodeSection_q6() {
-    console.log(api.fn.answers().answer);
+function show_postal_code_search_box() {
     load_postal_code();  
-    if (data) {
-    // the variable is defined
-      data = postalCode;
-    }
-    else{
-      var data = $.map(postalCode, function (obj) {
-        obj.id = obj.id || postalCode.indexOf(obj); // replace pk with your identifier
-        obj.text = obj.Name;
-        return obj;
-      });
-    }
-    api.fn.answers({answer:  'show'});
-    $('.rt-body.slt-page-container main').find('section').hide();
-    if ($('.post-code').length) {
-      $('.post-code').show();
-    }
-    else{
-      $('.rt-body.slt-page-container main').append(`<section class='post-code'>
-   <sha-interview-page-renderer>
-      <sha-interview-page-item-renderer>
-         <sha-rt-element>
-            <div class="sv-rt-element-container rt-element rt-sc-container q1 rt-element-active">
-               <sha-basic-single-choice>
-                  <div class="rt-qtext fr-view" id="1-text">What is your post code?</div>
-                  <div class="rt-qelement">
-                     <div class="rt-form-group">
-                        <sha-basic-single-item>
-                           <div class="rt-control rt-answer-option rt-has-input">
-                              <input type="radio" class="rt-control-input ng-untouched ng-pristine ng-valid" id="single_1_1" name="single_1" aria-labelledby="1-text label-1-0" tabindex="100000" onchange="answer()"><label class="rt-control-label rt-radio-button fr-view" id="label-1-0" for="single_1_1"><span>Post code:</span></label>
-                              <sha-validated-text-input>
-                                 <div class="rt-semi-open-container">
-                                    <sha-list-autocomplete>
-                                       <sha-drop-down class="ng-untouched ng-pristine ng-valid">
-                                          <div >
-                                             <dx-drop-down-box  class="rt-drop-down-container dx-show-invalid-badge dx-dropdownbox dx-textbox dx-texteditor dx-show-clear-button dx-dropdowneditor-button-visible dx-editor-outlined dx-widget dx-texteditor-empty dx-dropdowneditor dx-dropdowneditor-field-clickable dx-dropdowneditor-active">
-                                                <div class="dx-dropdowneditor-input-wrapper" id="post-code-select2">
-                                                   <div class="dx-dropdowneditor-field-template-wrapper">
-                                                      <div  class="rt-dropdown-choice-container dx-template-wrapper">
-                                                         <div class="fr-view" title=""></div>
-                                                         <dx-text-box class="rt-sr-only dx-show-invalid-badge dx-textbox dx-texteditor dx-editor-outlined dx-texteditor-empty dx-state-readonly dx-widget">
-                                                            <div class="dx-texteditor-container">
-                                                               <div class="dx-texteditor-input-container">
-                                                                  <input id="inputpostalCodeID" autocomplete="off" placeholder=" " class="dx-texteditor-input" type="text" readonly="" aria-readonly="true" spellcheck="false" tabindex="0" role="combobox">
-                                                                  <div data-dx_placeholder="" class="dx-placeholder"></div>
-                                                               </div>
-                                                               <div class="dx-texteditor-buttons-container">
-                                                                  <div></div>
-                                                               </div>
-                                                            </div>
-                                                         </dx-text-box>
-                                                      </div>
-                                                   </div>
-                                                   <input type="hidden" value="">
-                                                   <div class="dx-texteditor-buttons-container">
-                                                      <span class="dx-clear-button-area"><span class="dx-icon dx-icon-clear"></span></span>
-                                                      <div role="button" class="dx-widget dx-button-mode-contained dx-button-normal dx-dropdowneditor-button" aria-label="Select">
-                                                         <div class="dx-button-content">
-                                                            <div class="dx-dropdowneditor-icon"></div>
-                                                         </div>
-                                                      </div>
-                                                   </div>
-                                                </div>
-                                             </dx-drop-down-box>
-                                          </div>
-                                       </sha-drop-down>
-                                    </sha-list-autocomplete>
-                                    <label class="rt-sr-only" id="label-q1_1_text">Please define Nationality:#PostalCodeGermany</label>
-                                 </div>
-                              </sha-validated-text-input>
-                           </div>
-                        </sha-basic-single-item>
-                        <sha-basic-single-item>
-                           <div class="rt-control rt-answer-option"><input type="radio" class="rt-control-input ng-untouched ng-pristine ng-valid" id="single_1_2" onchange="dontanswer()" name="single_1" aria-labelledby="1-text label-1-1" tabindex="100002"><label class="rt-control-label rt-radio-button fr-view" id="label-1-1" for="single_1_2"><span>Don't want to answer</span></label></div>
-                        </sha-basic-single-item>
-                        <sha-not-answered></sha-not-answered>
-                     </div>
-                  </div>
-               </sha-basic-single-choice>
-            </div>
-         </sha-rt-element>
-      </sha-interview-page-item-renderer>
-   </sha-interview-page-renderer>
-</section>
-`);
-    // document.getElementById('inputpostalCodeID').value = "";
-    $('.post-code #post-code-select2').select2({
-      // allowClear: true,
-      // placeholder: "",
-      data: data,
-      query: function(q) {
-        var pageSize = 50,
-            results = this.data.filter(function(e) {
-              return contains(e.text, q.term);
-            });
-            
-        // Get a page sized slice of data from the results of filtering the data set.
-        
-        var paged = results.slice((q.page - 1) * pageSize, q.page * pageSize);
-        
-        q.callback({
-          results: paged,
-          more: results.length >= q.page * pageSize
-        });
-      }
-    });
 
-    }
-    $('#post-code-select2').on('select2:select', function (e) {
-      var data = e.params.data;
-      document.getElementById('inputpostalCodeID').value = data.Name;
-      $('#select2-post-code-select2-container').prop('title', data.Name);
-      $('#select2-post-code-select2-container').html(data.Name);
-      $('#single_1_1').prop('checked', true);
-      api.fn.answers({urlVar19:  data.Name});
-      // console.log(data);
-    });
-    var currentValue  = api.fn.answers().urlVar19;
-    // console.log(currentValue)
+    $('.rt-element.rt-text-container').append(`<input list="postalCodehtmlList" onchange="select_postal_code()"  onkeyup="update_postal_code_search_box()" name="inputPostalCodeID" id="inputPostalCodeID" autocomplete="off">
+    <datalist id="postalCodehtmlList"> </datalist>`);
+    document.getElementById('inputPostalCodeID').value = "";
+
+    var currentValue  = api.fn.answers().Q56_postal_code_show;
     if (currentValue) {
       if (currentValue !== "") {
-        document.getElementById('inputpostalCodeID').value = currentValue;
-        $('#single_1_1').prop('checked', true);
+        document.getElementById('inputPostalCodeID').value = currentValue;
       }
     }
-    $('.post-code').show(); 
+
+    if (find_postal_code(postalCodeList, document.getElementById('inputPostalCodeID').value)) {
+      console.log("Found ", document.getElementById('inputPostalCodeID').value);
+    }
+    else{
+      console.log("not found ", document.getElementById('inputPostalCodeID').value);
+    }
+
+    //$('.rt-btn.rt-btn-next').hide(); 
+    $('#inputPostalCodeID').show(); 
 }
-function dontanswer(){
-  console.log('Press do not want to answer')
-  clear_data_select2();
-  //set value don't answer
-  api.fn.answers({answer:  'no'});
+
+function hide_postal_code_search_box() {
+  $('#inputPostalCodeID').hide();
 }
-function answer(){
-  console.log('Press Answer...')
-  clear_data_select2();
-  api.fn.answers({answer:  'yes'});
-}
-function clear_data_select2(){
-  $('#post-code-select2').val(null).trigger('change');
-  document.getElementById('inputpostalCodeID').value = "";
-  $('#select2-post-code-select2-container').prop('title', "");
-  $('#select2-post-code-select2-container').html("");
-}
-function hidePostalCodeSection_q6() {
-  $('.rt-body.slt-page-container main').find('section').show();
-  $('.post-code').hide();
-  api.fn.answers({answer:  'hide'});
-}
+

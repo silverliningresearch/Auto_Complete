@@ -1,22 +1,10 @@
-#inputpostalCodeID {
+#inputFlightCodeID {
     position: absolute;
     max-width: 100%;
     width: 30rem;
 } 
 
-#inputPostalCodeQ27ID {
-    position: absolute;
-    max-width: 100%;
-    width: 30rem;
-} 
-
-#inputFlightCodeQ3ID {
-    position: absolute;
-    max-width: 100%;
-    width: 30rem;
-} 
-
-#inputFlightCodeQ24ID {
+#inputPostalCodeID {
     position: absolute;
     max-width: 100%;
     width: 30rem;
