@@ -1,6 +1,5 @@
     let airport_list = `
     [
- 
         {"airport": "Abakan International, Russia (ABA)"}, 
         {"airport": "Asaba International, Nigeria (ABB)"}, 
         {"airport": "Albacete, Spain (ABC)"}, 
