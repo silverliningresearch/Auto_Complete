@@ -128,7 +128,7 @@ function save_data(info) {
       console.log('saving info for Core_Q11: ', info);
       $('.rt-btn.rt-btn-next').show(); 
       break;
-
+      
     case "Core_Q13": //From  airport
       console.log('saving info for Core_Q13: ', info);                    
       $('.rt-btn.rt-btn-next').show(); 
