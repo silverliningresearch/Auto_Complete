@@ -61,12 +61,20 @@
             
             var airport_Tag = $("section:contains('final_destination_airport_tag')")
             console.log(airport_Tag);
-            if (api.fn.getCurrentPageIndex() === 0) {
-              load_airports_list();
-              show_external_search_box("Core_Q11");
-            }
-            else{
-              hide_external_search_box();
+
+            switch (api.fn.getCurrentPageIndex()) {
+              case 1:
+                load_airports_list();
+                show_external_search_box("Core_Q11");
+                break;
+              case 2:
+                load_airports_list();
+                show_external_search_box("Core_Q13");                
+                break;
+              default:
+                hide_external_search_box();
+                break;
+
             }
           }
 

@@ -126,13 +126,12 @@ function save_data(info) {
   switch (currentSearchQuestion) {
     case "Core_Q11": //Final airport
       console.log('saving info for Core_Q11: ', info);
-      save_airport(info);
-      
       $('.rt-btn.rt-btn-next').show(); 
       break;
+
     case "Core_Q13": //From  airport
       console.log('saving info for Core_Q13: ', info);                    
-
+      $('.rt-btn.rt-btn-next').show(); 
       break;     
 
     default:
